@@ -70,9 +70,14 @@ class ArticleCreateView(CreateView):
             return redirect('/auth/')  # هدایت به صفحه لاگین سرویس مرکزی
         return super().dispatch(request, *args, **kwargs)
 
+    # اضافه کردن چک لاگین در dispatch
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('/auth/')  # هدایت به صفحه لاگین سرویس مرکزی
+        return super().dispatch(request, *args, **kwargs)
+
     def form_valid(self, form):
         article = form.save(commit=False)
-        
         # پر کردن اطلاعات نویسنده و ویرایشگر
         article.author_user_id = self.request.user.id
         article.last_editor_user_id = self.request.user.id
