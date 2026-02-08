@@ -1,9 +1,14 @@
 {% extends "team6/base.html" %}
-{% block title %}{{ article.title_fa if article else "ایجاد مقاله" }}{% endblock %}
 {% load static %}
 
+{% block title %}
+    {% if article %}{{ article.title_fa }}{% else %}ایجاد مقاله{% endif %}
+{% endblock %}
+
 {% block content %}
-<h2>{{ article.title_fa if article else "ایجاد مقاله" }}</h2>
+<h2>
+    {% if article %}{{ article.title_fa }}{% else %}ایجاد مقاله{% endif %}
+</h2>
 <form method="POST">
     {% csrf_token %}
     <div class="mb-3">

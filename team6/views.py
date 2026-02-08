@@ -58,17 +58,24 @@ class ArticleCreateView(CreateView):
     template_name = 'team6/article_form.html'
     success_url = '/team6/'
 
+    # اضافه کردن چک لاگین در dispatch
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return redirect('/auth/')  # هدایت به صفحه لاگین سرویس مرکزی
+        return super().dispatch(request, *args, **kwargs)
+
     def form_valid(self, form):
         article = form.save(commit=False)
-        
-        # اگر کاربر لاگین کرده باشد
-        if self.request.user.is_authenticated:
-            article.author_user_id = self.request.user.id
-            article.last_editor_user_id = self.request.user.id
-        
+        # پر کردن اطلاعات نویسنده و ویرایشگر
+        article.author_user_id = self.request.user.id
+        article.last_editor_user_id = self.request.user.id
         article.status = 'published'
+        if not article.slug:
+            # اگر slug وارد نشده بود، می‌تونی یه uuid کوتاه بسازی
+            article.slug = str(uuid.uuid4())[:8]
+        article.url = f"/team6/article/{article.slug}/"
         article.save()
-        
+        form.save_m2m()
         return redirect(self.success_url)
 
 # ویرایش مقاله
@@ -102,10 +109,13 @@ def edit_article(request, slug):
 
 # گزارش مقاله (با slug)
 def report_article(request, slug):
+    if not request.user.is_authenticated:
+        return redirect('/auth/')
+    
     article = get_object_or_404(WikiArticle, slug=slug)
     
     if request.method == "POST":
-        reporter_id = request.user.id if request.user.is_authenticated else uuid.uuid4()
+        reporter_id = request.user.id 
         
         WikiArticleReports.objects.create(
             article=article,
@@ -113,7 +123,7 @@ def report_article(request, slug):
             report_type=request.POST.get('type', 'other'),
             description=request.POST.get('desc', '')
         )
-        return JsonResponse({"status": "success", "message": "گزارش با موفقیت ثبت شد"})
+        return render(request, 'team6/report_success.html', {'article': article})
     
     return render(request, 'team6/article_report.html', {'article': article})
 
