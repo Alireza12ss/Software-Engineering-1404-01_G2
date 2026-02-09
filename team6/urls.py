@@ -1,20 +1,30 @@
-from django.urls import path, include,re_path
+from django.urls import path, re_path
 from . import views
 
+app_name = "team6"
+
 urlpatterns = [
-    path("", views.ArticleListView.as_view(), name="article_list"),
+    # صفحه اصلی تیم 6 (لیست مقالات)
+    path("", views.ArticleListView.as_view(), name="index"),
+    
+    # ویو پایه / API پایه
     path("ping/", views.ping, name="ping"),
-    path("add/", views.ArticleCreateView.as_view(), name="article_add"),
-    # path("article/<slug:slug>/", views.article_detail, name="article_detail"),
-    # re_path(r'^article/(?P<slug>[-\w]+)/$', views.article_detail, name='article_detail'),
-    # path("article/<slug:slug>/edit/", views.edit_article, name="article_edit"),
-    # path("article/<slug:slug>/revisions/", views.article_revisions, name="article_revisions")
+    
+    # اضافه کردن مقاله
+    path("create/", views.ArticleCreateView.as_view(), name="article_add"),
+    
+    # جزئیات مقاله با slug
     re_path(r'^article/(?P<slug>[^/]+)/$', views.article_detail, name='article_detail'),
     
-    # برای سایر مسیرهای دارای اسلاگ هم همین تغییر را اعمال کنید
+    # ویرایش مقاله
     re_path(r'^article/(?P<slug>[^/]+)/edit/$', views.edit_article, name="article_edit"),
+    
+    # نمایش نسخه‌ها
     re_path(r'^article/(?P<slug>[^/]+)/revisions/$', views.article_revisions, name="article_revisions"),
-    path("article/<uuid:pk>/report/", views.report_article, name="article_report"),
-    # path("article/<uuid:pk>/ai-summary/", views.get_llm_summary, name="ai_summary"),
+    
+    # گزارش مقاله با slug (ساده‌ترین راه)
+    re_path(r'^article/(?P<slug>[^/]+)/report/$', views.report_article, name="article_report"),
+    
+    # API خارجی برای محتوا
     path("api/wiki/content", views.get_wiki_content, name="external_api"),
 ]

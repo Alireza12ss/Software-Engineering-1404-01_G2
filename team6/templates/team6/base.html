@@ -1,0 +1,144 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ویکی گردشگری ایران | گروه ۶{% endblock %}</title>
+    
+    <!-- استایل‌های اصلی پروژه -->
+    <link rel="stylesheet" href="{% static 'styles/styles.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <style>
+        /* استایل‌های خاص تیم ۶ */
+        .team6-header {
+            background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+            color: white;
+            padding: 15px 0;
+            margin-bottom: 20px;
+            border-radius: 0 0 10px 10px;
+        }
+        
+        .team6-nav {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .team6-nav a {
+            color: #495057;
+            margin-left: 15px;
+            text-decoration: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        
+        .team6-nav a:hover {
+            background: #e9ecef;
+            color: #1a237e;
+        }
+        
+        .team6-container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+        
+        /* تطبیق RTL با بوت‌استرپ */
+        .form-control, .form-select {
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+    <!-- هدر مشابه صفحه اصلی -->
+    <div class="team6-header">
+        <div class="container">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; align-items: center;">
+                    <i class="fa-solid fa-book-open fa-2x" style="margin-left: 15px;"></i>
+                    <div>
+                        <h2 style="margin: 0; font-weight: bold;">دانشنامه گردشگری ایران</h2>
+                        <p style="margin: 0; opacity: 0.9; font-size: 0.9em;">ویکی تخصصی - گروه ۶</p>
+                    </div>
+                </div>
+                <div>
+                    <a href="/" class="btn btn-light btn-sm">
+                        <i class="fa-solid fa-home"></i> صفحه اصلی
+                    </a>
+                    {% if request.user.is_authenticated %}
+                        <span class="badge bg-success" style="margin-right: 10px;">
+                            <i class="fa-solid fa-user"></i> {{ request.user.email|truncatechars:20 }}
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- نویگیشن داخلی -->
+        <div class="team6-nav">
+            <a href="{% url 'team6:index' %}">
+                <i class="fa-solid fa-list"></i> لیست مقالات
+            </a>
+            <a href="{% url 'team6:article_add' %}">
+                <i class="fa-solid fa-plus"></i> ایجاد مقاله جدید
+            </a>
+            {% if request.user.is_authenticated %}
+                <a href="/auth/logout/" style="float: left; color: #dc3545;">
+                    <i class="fa-solid fa-sign-out-alt"></i> خروج
+                </a>
+            {% else %}
+                <a href="/auth/" style="float: left;">
+                    <i class="fa-solid fa-sign-in-alt"></i> ورود
+                </a>
+            {% endif %}
+        </div>
+
+        <!-- محتوای اصلی -->
+        <div class="team6-container">
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </div>
+
+        
+        <!-- فوتر -->
+        <footer style="text-align: center; padding: 20px; color: #6c757d; font-size: 0.9em;">
+            <hr>
+            <p>ویکی گردشگری ایران | پروژه مهندسی نرم‌افزار | گروه ۶</p>
+            <p>© ۱۴۰۴ - تمامی حقوق محفوظ است</p>
+        </footer>
+    </div>
+
+    <!-- اسکریپت‌ها -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // اعمال RTL به المان‌های فرم
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('input, textarea, select').forEach(el => {
+                el.classList.add('text-end');
+            });
+        });
+    </script>
+</body>
+</html>
