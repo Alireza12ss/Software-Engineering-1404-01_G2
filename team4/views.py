@@ -17,6 +17,7 @@ from team4.serializers import (
     FacilityCreateSerializer, RegionSearchResultSerializer
 )
 from team4.services.facility_service import FacilityService
+from team4.services.region_service import RegionService
 
 TEAM_NAME = "team4"
 
@@ -89,34 +90,23 @@ class FacilityViewSet(viewsets.ModelViewSet):
         elif sort_by == 'review_count':
             facilities = facilities.order_by('-review_count')
         elif sort_by == 'distance' and city_name:
-            # برای مرتب‌سازی بر اساس فاصله، نیاز به مرکز شهر داریم
-            try:
-                city = City.objects.filter(
-                    name_fa__icontains=city_name
-                ).first() or City.objects.filter(
-                    name_en__icontains=city_name
-                ).first()
+            # استفاده از Service برای مرتب‌سازی بر اساس فاصله
+            sorted_facilities = FacilityService.sort_by_city_distance(facilities, city_name)
+            
+            if sorted_facilities:
+                # استفاده از pagination
+                page = self.paginate_queryset([f['facility'] for f in sorted_facilities])
+                if page is not None:
+                    serializer = self.get_serializer(page, many=True)
+                    return self.get_paginated_response(serializer.data)
                 
-                if city and city.location:
-                    facilities_list = list(facilities)
-                    sorted_facilities = FacilityService.sort_by_distance(
-                        facilities_list,
-                        city.location
-                    )
-                    
-                    # استفاده از pagination
-                    page = self.paginate_queryset([f['facility'] for f in sorted_facilities])
-                    if page is not None:
-                        serializer = self.get_serializer(page, many=True)
-                        return self.get_paginated_response(serializer.data)
-                    
-                    serializer = self.get_serializer(
-                        [f['facility'] for f in sorted_facilities],
-                        many=True
-                    )
-                    return Response(serializer.data)
-            except:
-                pass
+                serializer = self.get_serializer(
+                    [f['facility'] for f in sorted_facilities],
+                    many=True
+                )
+                return Response(serializer.data)
+            # اگر شهر یافت نشد، fallback به sorting معمولی
+            facilities = facilities.order_by('-avg_rating')
         
         # Pagination
         page = self.paginate_queryset(facilities)
@@ -140,14 +130,30 @@ class FacilityViewSet(viewsets.ModelViewSet):
     
     @action(detail=True, methods=['get'])
     def nearby(self, request, pk=None):
-        radius = float(request.query_params.get('radius', 5))
+        # Validation شعاع
+        radius_param = request.query_params.get('radius', 5)
+        is_valid, radius, error_msg = FacilityService.validate_radius(radius_param)
+        
+        if not is_valid:
+            return Response(
+                {'error': error_msg},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
         category_name = request.query_params.get('category')
         
-        nearby_facilities = FacilityService.get_nearby_facilities(
+        # دریافت امکانات نزدیک با center_facility
+        center_facility, nearby_facilities = FacilityService.get_nearby_facilities(
             fac_id=pk,
             radius_km=radius,
             category_name=category_name
         )
+        
+        if center_facility is None:
+            return Response(
+                {'error': 'مکان مرجع یافت نشد'},
+                status=status.HTTP_404_NOT_FOUND
+            )
         
         if not nearby_facilities:
             return Response(
@@ -155,16 +161,7 @@ class FacilityViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_200_OK
             )
         
-        # دریافت مکان مرکزی
-        try:
-            center_facility = Facility.objects.get(fac_id=pk)
-            center_data = FacilityListSerializer(center_facility).data
-        except Facility.DoesNotExist:
-            return Response(
-                {'error': 'مکان مرجع یافت نشد'},
-                status=status.HTTP_404_NOT_FOUND
-            )
-        
+        center_data = FacilityListSerializer(center_facility).data
         serializer = FacilityNearbySerializer(nearby_facilities, many=True)
         
         return Response({
@@ -261,6 +258,7 @@ def search_regions(request):
     query = request.query_params.get('query', '').strip()
     region_type = request.query_params.get('region_type', '').strip().lower()
     
+    # Validation
     if not query:
         return Response(
             {'error': 'پارامتر query الزامی است'},
@@ -268,59 +266,15 @@ def search_regions(request):
         )
     
     # اعتبارسنجی region_type
-    valid_types = ['province', 'city', 'village', '']
-    if region_type and region_type not in valid_types:
+    is_valid, error_msg = RegionService.validate_region_type(region_type)
+    if not is_valid:
         return Response(
-            {'error': f'region_type باید یکی از مقادیر {valid_types[:-1]} باشد'},
+            {'error': error_msg},
             status=status.HTTP_400_BAD_REQUEST
         )
     
-    results = []
-    
-    # جستجو در استان‌ها
-    if not region_type or region_type == 'province':
-        provinces = Province.objects.filter(
-            Q(name_fa__icontains=query) | 
-            Q(name_en__icontains=query)
-        )
-        
-        for province in provinces:
-            results.append({
-                'id': str(province.province_id),
-                'name': province.name_fa,
-                'parent_region_id': None,
-                'parent_region_name': None
-            })
-    
-    # جستجو در شهرها
-    if not region_type or region_type == 'city':
-        cities = City.objects.select_related('province').filter(
-            Q(name_fa__icontains=query) | 
-            Q(name_en__icontains=query)
-        )
-        
-        for city in cities:
-            results.append({
-                'id': str(city.city_id),
-                'name': city.name_fa,
-                'parent_region_id': str(city.province.province_id),
-                'parent_region_name': city.province.name_fa
-            })
-    
-    # جستجو در روستاها
-    if not region_type or region_type == 'village':
-        villages = Village.objects.select_related('city', 'city__province').filter(
-            Q(name_fa__icontains=query) | 
-            Q(name_en__icontains=query)
-        )
-        
-        for village in villages:
-            results.append({
-                'id': str(village.village_id),
-                'name': village.name_fa,
-                'parent_region_id': str(village.city.city_id),
-                'parent_region_name': village.city.name_fa
-            })
+    # جستجو از طریق Service
+    results = RegionService.search_regions(query, region_type or None)
     
     # سریالایز نتایج
     serializer = RegionSearchResultSerializer(results, many=True)

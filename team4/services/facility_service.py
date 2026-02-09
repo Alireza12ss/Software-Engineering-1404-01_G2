@@ -106,13 +106,23 @@ class FacilityService:
     
     @staticmethod
     def get_nearby_facilities(fac_id, radius_km=5, category_name=None):
+        """
+        دریافت امکانات نزدیک
+        
+        Returns:
+            tuple: (center_facility, nearby_facilities_list)
+                   اگر مکان مرکزی یافت نشد: (None, [])
+                   اگر location نداشت: (center_facility, [])
+        """
         try:
-            center_facility = Facility.objects.get(fac_id=fac_id)
+            center_facility = Facility.objects.select_related(
+                'city', 'category'
+            ).prefetch_related('amenities').get(fac_id=fac_id)
         except Facility.DoesNotExist:
-            return []
+            return None, []
         
         if not center_facility.location:
-            return []
+            return center_facility, []
         
         # دریافت تمام امکانات (به جز خود مکان مرجع)
         nearby = Facility.objects.filter(status=True).exclude(fac_id=fac_id)
@@ -149,7 +159,7 @@ class FacilityService:
         # مرتب‌سازی بر اساس فاصله
         nearby_with_distance.sort(key=lambda x: x['distance_km'])
         
-        return nearby_with_distance
+        return center_facility, nearby_with_distance
     
     @staticmethod
     def compare_facilities(fac_ids):
@@ -238,6 +248,45 @@ class FacilityService:
                 'most_amenities': most_amenities_id,
             }
         }
+    
+    @staticmethod
+    def sort_by_city_distance(facilities, city_name):
+        """
+        مرتب‌سازی امکانات بر اساس فاصله از مرکز شهر
+        
+        Args:
+            facilities: QuerySet یا لیست امکانات
+            city_name: نام شهر
+            
+        Returns:
+            list یا None: لیست امکانات مرتب شده یا None اگر شهر یافت نشد
+        """
+        city = City.objects.filter(
+            Q(name_fa__icontains=city_name) | 
+            Q(name_en__icontains=city_name)
+        ).first()
+        
+        if not city or not city.location:
+            return None
+        
+        facilities_list = list(facilities)
+        return FacilityService.sort_by_distance(facilities_list, city.location)
+    
+    @staticmethod
+    def validate_radius(radius_value):
+        """
+        اعتبارسنجی شعاع جستجو
+        
+        Returns:
+            tuple: (is_valid, radius_float, error_message)
+        """
+        try:
+            radius = float(radius_value)
+            if radius <= 0 or radius > 100:
+                return False, None, 'radius باید عدد بین 1 تا 100 باشد'
+            return True, radius, None
+        except (ValueError, TypeError):
+            return False, None, 'radius باید یک عدد معتبر باشد'
     
     @staticmethod
     def get_all_cities():
