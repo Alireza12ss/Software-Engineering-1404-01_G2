@@ -10,7 +10,12 @@
                placeholder="جستجوی مقالات..."
                value="{{ request.GET.q }}">
     </div>
-
+    <div class="col-md-2">
+        <select name="sort" class="form-select" onchange="this.form.submit()">
+            <option value="alphabetical" {% if request.GET.sort == 'alphabetical' %}selected{% endif %}>الفبایی (آ-ی)</option>
+            <option value="views" {% if request.GET.sort == 'views' %}selected{% endif %}>پربازدیدترین‌ها</option>
+        </select>
+    </div>
     <div class="col-md-3">
         <select name="category" class="form-select">
             <option value="">همه دسته‌ها</option>

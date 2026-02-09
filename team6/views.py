@@ -10,6 +10,9 @@ from .models import WikiArticle, WikiCategory, WikiArticleRevision, WikiArticleR
 from deep_translator import GoogleTranslator
 import requests
 from django.db import IntegrityError
+from django.views.decorators.cache import never_cache
+from django.utils.decorators import method_decorator
+
 TEAM_NAME = "team6"
 
 # --- Base views ---
@@ -21,6 +24,7 @@ def base(request):
     return render(request, "team6/index.html", {"articles": articles})
 
 # لیست مقالات
+@method_decorator(never_cache, name='dispatch')#برای اینکه بدون رفرش بازدید اوکی شه
 class ArticleListView(ListView):
     model = WikiArticle
     template_name = 'team6/article_list.html'
@@ -47,6 +51,12 @@ class ArticleListView(ListView):
         
         if cat:  # فیلتر دسته‌بندی
             queryset = queryset.filter(category__slug=cat)
+            
+        sort_by = self.request.GET.get('sort', 'alphabetical')
+        if sort_by == 'views':
+            queryset = queryset.order_by('-view_count')
+        else:
+            queryset = queryset.order_by('title_fa') # سورت الفبایی پیش‌فرض
             
         return queryset.distinct()
 
@@ -241,15 +251,25 @@ def article_detail(request, slug):
     try:
         article = get_object_or_404(WikiArticle, slug=slug)
         
-        # افزایش بازدید
-        if hasattr(article, 'view_count'):
-            article.view_count += 1
-            article.save()
+        # گرفتن لیست مقالات دیده شده در این سشن (اگر نبود، لیست خالی)
+        viewed_articles = request.session.get('viewed_articles', [])
         
+        # افزایش بازدید
+        #  چک کردن اینکه آیا این مقاله خاص قبلاً توسط این یوزر دیده شده یا نه
+        if slug not in viewed_articles:
+            if hasattr(article, 'view_count'):
+                article.view_count += 1
+                # استفاده از update_fields برای امنیت و سرعت بیشتر دیتابیس
+                article.save(update_fields=['view_count'])
+        #  اضافه کردن اسلاگ این مقاله به لیست دیده‌شده‌های یوزر
+            viewed_articles.append(slug)
+            request.session['viewed_articles'] = viewed_articles
+            # اطلاع به جنگو که سشن تغییر کرده و باید ذخیره شود
+            request.session.modified = True
         return render(request, 'team6/article_detail.html', {'article': article})
     except Exception as e:
-        # لاگ کردن خطا برای ادمین (اختیاری)
-        return render(request, 'errors/500.html', status=500)
+        print(f"Error: {e}") 
+        return render(request, 'team6/errors/500.html', status=500)
 
 # API برای محتوای ویکی
 def get_wiki_content(request):
@@ -312,6 +332,26 @@ def summarize_text(text):
 
     # اگر خلاصه‌سازی موفق نبود، متن کامل را برمی‌گردانیم
     return text[:150] + "..." if len(text) > 150 else text
+
+@login_required
+def delete_article(request, slug):
+    # پیدا کردن مقاله یا نمایش ۴۰۴
+    article = get_object_or_404(WikiArticle, slug=slug)
+    
+    # کنترل دسترسی: فقط نویسنده اصلی
+    # نکته: چون author_user_id در مدل شما UUID است، آن را با آیدی کاربر مقایسه می‌کنیم
+    if str(article.author_user_id) != str(request.user.id):
+        messages.error(request, "✋ خطای امنیتی: شما نویسنده این مقاله نیستید و اجازه حذف آن را ندارید.")
+        return redirect('team6:article_detail', slug=slug)
+
+    if request.method == "POST":
+        article.delete()
+        messages.success(request, "✅ مقاله با موفقیت حذف شد.")
+        return redirect('team6:index')
+    
+    return render(request, 'team6/article_confirm_delete.html', {'article': article})
+
+
 
 def error_404(request, exception):
     return render(request, 'team6/errors/404.html', status=404)

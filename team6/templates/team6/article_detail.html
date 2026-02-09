@@ -21,9 +21,15 @@
 
 <div class="d-flex gap-2">
     {% if request.user.is_authenticated and article.author_user_id == request.user.id %}
+    <div class="d-flex gap-2">
         <a href="{% url 'team6:article_edit' article.slug %}" class="btn btn-warning">
             <i class="fa-solid fa-edit"></i> ویرایش مقاله
         </a>
+        <a href="{% url 'team6:article_delete' article.slug %}" class="btn btn-danger">
+                <i class="fa fa-trash"></i> حذف مقاله
+            </a>
+
+        </div>
     {% endif %}
     
     <a href="{% url 'team6:article_revisions' article.slug %}" class="btn btn-info">

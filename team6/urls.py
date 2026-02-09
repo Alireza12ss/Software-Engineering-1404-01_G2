@@ -19,6 +19,9 @@ urlpatterns = [
     # ویرایش مقاله
     re_path(r'^article/(?P<slug>[^/]+)/edit/$', views.edit_article, name="article_edit"),
     
+    #حذف مقاله
+    re_path(r'^article/(?P<slug>[^/]+)/delete/$', views.delete_article, name="article_delete"),
+    
     # نمایش نسخه‌ها
     re_path(r'^article/(?P<slug>[^/]+)/revisions/$', views.article_revisions, name="article_revisions"),
     
