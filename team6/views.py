@@ -142,6 +142,10 @@ class ArticleCreateView(CreateView):
 @login_required
 def edit_article(request, slug):
     article = get_object_or_404(WikiArticle, slug=slug)
+    if article.author_user_id != request.user.id:
+        return render(request, 'team6/not_allowed.html', {
+            'message': '✋ فقط نویسنده‌ی مقاله می‌تواند مقاله را ویرایشش کند'
+        })
     
     # این متغیر را باید از خود مقاله بگیریم
     current_rev = article.current_revision_no if hasattr(article, 'current_revision_no') else 1
@@ -184,6 +188,19 @@ def edit_article(request, slug):
     })
 
 # گزارش مقاله 
+def article_revision_detail(request, slug, revision_no):
+    article = get_object_or_404(WikiArticle, slug=slug)
+    revision = get_object_or_404(
+        WikiArticleRevision,
+        article=article,
+        revision_no=revision_no
+    )
+
+    return render(request, 'team6/article_revision_detail.html', {
+        'article': article,
+        'revision': revision,
+    })
+
 def report_article(request, slug):
     if not request.user.is_authenticated:
         return redirect('/auth/')
@@ -209,7 +226,11 @@ def report_article(request, slug):
 # نمایش نسخه‌ها
 def article_revisions(request, slug):
     article = get_object_or_404(WikiArticle, slug=slug)
-    revisions = WikiArticleRevision.objects.filter(article=article).order_by('-created_at')
+    revisions = WikiArticleRevision.objects.filter(
+    article=article
+        ).exclude(
+            revision_no__isnull=True
+        ).order_by('-created_at')
     return render(request, 'team6/article_revisions.html', {
         'article': article, 
         'revisions': revisions

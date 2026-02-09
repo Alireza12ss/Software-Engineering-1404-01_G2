@@ -27,6 +27,13 @@ urlpatterns = [
     
     # API خارجی برای محتوا
     path("api/wiki/content", views.get_wiki_content, name="external_api"),
+
+    
+    re_path(
+    r'^article/(?P<slug>[^/]+)/revisions/(?P<revision_no>\d+)/$',
+    views.article_revision_detail,
+    name="article_revision_detail"
+),
 ]
 
 

@@ -8,6 +8,7 @@
         <small class="text-muted">({{ article.title_en }})</small>
     {% endif %}
 </h2>
+
 <div class="mb-3 text-muted">
     <i class="fa-solid fa-folder"></i> دسته: {{ article.category.title_fa }} | 
     <i class="fa-solid fa-eye"></i> بازدید: {{ article.view_count|default:0 }} |
@@ -19,10 +20,10 @@
 </div>
 
 <div class="d-flex gap-2">
-    {% if request.user.is_authenticated %}
-    <a href="{% url 'team6:article_edit' article.slug %}" class="btn btn-warning">
-        <i class="fa-solid fa-edit"></i> ویرایش مقاله
-    </a>
+    {% if request.user.is_authenticated and article.author_user_id == request.user.id %}
+        <a href="{% url 'team6:article_edit' article.slug %}" class="btn btn-warning">
+            <i class="fa-solid fa-edit"></i> ویرایش مقاله
+        </a>
     {% endif %}
     
     <a href="{% url 'team6:article_revisions' article.slug %}" class="btn btn-info">
@@ -54,4 +55,5 @@
         <p><strong>آدرس:</strong> <code>/team6/article/{{ article.slug }}/</code></p>
     </div>
 </div>
+
 {% endblock %}

@@ -72,11 +72,11 @@
                     <i class="fa-solid fa-book-open"></i> مطالعه
                 </a>
 
-                {% if request.user.is_authenticated %}
-                <a href="{% url 'team6:article_edit' article.slug %}"
-                   class="btn btn-outline-warning btn-sm flex-fill">
-                    <i class="fa-solid fa-pen"></i> ویرایش
-                </a>
+                {% if request.user.is_authenticated and article.author_user_id == request.user.id %}
+                    <a href="{% url 'team6:article_edit' article.slug %}"
+                       class="btn btn-outline-warning btn-sm flex-fill">
+                        <i class="fa-solid fa-pen"></i> ویرایش
+                    </a>
                 {% endif %}
             </div>
         </div>
