@@ -23,8 +23,42 @@ from django.http import Http404
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import FAISS
 from .services.semantic_search import SemanticSearchService
+from bs4 import BeautifulSoup
+from .models import WikiArticle, WikiArticleLink
+from django.utils.text import slugify
 
 
+def sync_internal_links(article):
+    """
+    این تابع متن مقاله را اسکن کرده و لینک‌های داخلی را استخراج و در دیتابیس ذخیره می‌کند.
+    """
+    # ۱. حذف لینک‌های قدیمی این مقاله برای بازنویسی
+    WikiArticleLink.objects.filter(from_article=article).delete()
+
+    # ۲. پارس کردن متن HTML مقاله
+    soup = BeautifulSoup(article.body_fa, 'html.parser')
+    
+    # ۳. پیدا کردن تمام تگ‌های <a>
+    for a_tag in soup.find_all('a', href=True):
+        href = a_tag['href']
+        
+        # بررسی اینکه آیا لینک مربوط به سیستم خودمان است
+        if '/team6/article/' in href:
+            # استخراج اسلاگ از انتهای آدرس
+            # مثال: /team6/article/si-o-se-pol/ -> si-o-se-pol
+            target_slug = href.strip('/').split('/')[-1]
+            
+            try:
+                target_article = WikiArticle.objects.get(slug=target_slug)
+                # ذخیره در جدول پیوندها
+                WikiArticleLink.objects.get_or_create(
+                    from_article=article,
+                    to_article=target_article,
+                    defaults={'anchor_text': a_tag.get_text()}
+                )
+            except WikiArticle.DoesNotExist:
+                # اگر مقاله‌ای با این اسلاگ پیدا نشد، از آن عبور کن
+                continue
 
 # تنظیم لاگر برای چاپ در ترمینال
 logger = logging.getLogger(__name__)
@@ -204,6 +238,7 @@ class ArticleCreateView(CreateView):
             # messages.warning(self.request, "مقاله ذخیره شد، اما سیستم هوش مصنوعی برای تولید خلاصه در دسترس نبود.")
         
         article.save()
+        sync_internal_links(article)
         WikiArticleRevision.objects.create(
             article=article,
             revision_no=1,
@@ -221,6 +256,8 @@ class ArticleCreateView(CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['categories'] = WikiCategory.objects.all()
+        # اضافه کردن لیست مقالات برای لینک‌دهی داخلی
+        context['all_articles'] = WikiArticle.objects.filter(status='published').values('title_fa', 'slug')
         return context
     
     def get_form(self, form_class=None):
@@ -277,17 +314,20 @@ def edit_article(request, slug):
         article.last_editor_user_id = request.user.id
         # article.featured_image_url = request.POST.get('featured_image_url', article.featured_image_url)
         article.save()
+        sync_internal_links(article)
 
         messages.success(request, "✅ مقاله با موفقیت ویرایش شد")
         return redirect('team6:article_detail', slug=article.slug)
 
     # برای GET، فرم و دسته‌بندی‌ها را به قالب می‌فرستیم
     categories = WikiCategory.objects.all()
+    # all_articles = WikiArticle.objects.filter(status='published').values('title_fa', 'slug')
+    all_articles = WikiArticle.objects.filter(status='published')
     return render(request, 'team6/article_edit.html', {
         'article': article,
         'categories': categories,
+        'all_articles': all_articles, # اضافه شود
     })
-
 # گزارش مقاله 
 def article_revision_detail(request, slug, revision_no):
     article = get_object_or_404(WikiArticle, slug=slug)
@@ -536,3 +576,6 @@ def preview_ai_content(request):
         return JsonResponse({
             'error': f'خطا: {str(e)}'
         }, status=500)
+
+
+

@@ -3,11 +3,32 @@
 
 {% block content %}
 
-<h2>{{ article.title_fa }}
-    {% if article.title_en %}
-        <small class="text-muted">({{ article.title_en }})</small>
-    {% endif %}
-</h2>
+<style>
+    .article-content-body a {
+        color: #0066cc !important; /* آبی کلاسیک ویکی */
+        text-decoration: underline !important; /* زیرخط‌دار */
+        font-weight: 500;
+    }
+    .article-content-body a:hover {
+        color: #004080 !important;
+        background-color: rgba(0, 102, 204, 0.05);
+    }
+    .back-btn {
+        margin-bottom: 15px;
+    }
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>{{ article.title_fa }}
+        {% if article.title_en %}
+            <small class="text-muted">({{ article.title_en }})</small>
+        {% endif %}
+    </h2>
+    
+    <button onclick="history.back()" class="btn btn-outline-secondary btn-sm back-btn">
+        <i class="fa-solid fa-arrow-left"></i> بازگشت
+    </button>
+</div>
 
 <div class="mb-3 text-muted">
     <i class="fa-solid fa-folder"></i> دسته: {{ article.category.title_fa }} | 
@@ -15,58 +36,52 @@
     <i class="fa-solid fa-calendar"></i> تاریخ ایجاد: {{ article.created_at|date:"Y/m/d" }}
 </div>
 
-<div class="card p-4 mb-4" style="border-right: 4px solid #4CAF50;">
-    {{ article.body_fa|linebreaks }}
+<div class="card p-4 mb-4 article-content-body" style="border-right: 4px solid #4CAF50; line-height: 1.8; font-size: 1.1rem;">
+    {{ article.body_fa|safe|linebreaks }}
 </div>
 
-<div class="d-flex gap-2">
+<div class="d-flex gap-2 mb-4">
     {% if request.user.is_authenticated and article.author_user_id == request.user.id %}
-    <div class="d-flex gap-2">
         <a href="{% url 'team6:article_edit' article.slug %}" class="btn btn-warning">
             <i class="fa-solid fa-edit"></i> ویرایش مقاله
         </a>
         <a href="{% url 'team6:article_delete' article.slug %}" class="btn btn-danger">
-                <i class="fa fa-trash"></i> حذف مقاله
-            </a>
-
-        </div>
+            <i class="fa fa-trash"></i> حذف مقاله
+        </a>
     {% endif %}
     
     <a href="{% url 'team6:article_revisions' article.slug %}" class="btn btn-info">
         <i class="fa-solid fa-history"></i> تاریخچه نسخه‌ها
     </a>
     
-    <!-- گزارش تخلف با slug -->
-    <a href="{% url 'team6:article_report' article.slug %}" class="btn btn-danger">
+    <a href="{% url 'team6:article_report' article.slug %}" class="btn btn-outline-danger">
         <i class="fa-solid fa-flag"></i> گزارش تخلف
     </a>
 </div>
 
 <hr class="my-4">
 
-<div class="card">
+<div class="card shadow-sm">
     <div class="card-header bg-light">
-        <i class="fa-solid fa-info-circle"></i> اطلاعات مقاله
+        <i class="fa-solid fa-info-circle"></i> اطلاعات تکمیلی
     </div>
     <div class="card-body">
         <p><strong>نام مکان:</strong> {{ article.place_name|default:"ثبت نشده" }}</p>
-        <p><strong>خلاصه:</strong> {{ article.summary|default:"خلاصه‌ای ثبت نشده است" }}</p>
+        <p><strong>خلاصه (AI):</strong> <span class="text-muted">{{ article.summary|default:"خلاصه‌ای ثبت نشده است" }}</span></p>
+        
         {% if article.tags.all %}
-        <p><strong>🏷️ تگ‌ها:</strong>
+        <div class="mt-2">
+            <strong>🏷️ تگ‌ها:</strong>
             {% for tag in article.tags.all %}
-            <span class="badge bg-secondary me-1">{{ tag.title_fa }}</span>
+                <span class="badge bg-light text-dark border me-1">{{ tag.title_fa }}</span>
             {% endfor %}
-        </p>
+        </div>
         {% endif %}
         
-        <p><strong>شناسه مقاله:</strong> 
-            {% if article.id_article %}
-                {{ article.id_article }}
-            {% else %}
-                {{ article.slug }}
-            {% endif %}
-        </p>
-        <p><strong>آدرس:</strong> <code>/team6/article/{{ article.slug }}/</code></p>
+        <div class="mt-3 small text-muted">
+            <p class="mb-1"><strong>شناسه:</strong> {{ article.slug }}</p>
+            <p class="mb-0"><strong>لینک مستقیم:</strong> <code>/team6/article/{{ article.slug }}/</code></p>
+        </div>
     </div>
 </div>
 
