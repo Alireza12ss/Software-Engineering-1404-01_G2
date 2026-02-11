@@ -107,21 +107,21 @@ class ArticleListView(ListView):
 
         # ---------- سرچ معنایی ----------
         if q and search_type == 'semantic':
-            # articles = list(queryset)
+            articles = list(queryset)
 
-            # if not articles:
-            #     return queryset.none()
+            if not articles:
+                return queryset.none()
 
-            # semantic_service = SemanticSearchService()
+            semantic_service = SemanticSearchService()
 
-            # ranked_articles = semantic_service.search(
-            #     articles=articles,
-            #     query=q,
-            #     k=10
-            # )
+            ranked_articles = semantic_service.search(
+                articles=articles,
+                query=q,
+                k=10
+            )
 
-            # # فقط خود مقاله‌ها به ترتیب شباهت معنایی
-            # return [article for article, score in ranked_articles]
+            # فقط خود مقاله‌ها به ترتیب شباهت معنایی
+            return [article for article, score in ranked_articles]
             all_articles = list(queryset)
             if not all_articles:
                 return queryset.none()
