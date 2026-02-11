@@ -268,16 +268,16 @@ class Facility(models.Model):
 
     def get_coordinates(self):
         if self.location:
-            return (self.location.x, self.location.y)
+            return (self.location.longitude, self.location.latitude)
         return None
     
     @property
     def latitude(self):
-        return self.location.y if self.location else None
+        return self.location.latitude if self.location else None
     
     @property
     def longitude(self):
-        return self.location.x if self.location else None
+        return self.location.longitude if self.location else None
 
     def calculate_distance_to(self, point):
         """محاسبه فاصله تا یک نقطه - برحسب کیلومتر
@@ -293,12 +293,10 @@ class Facility(models.Model):
         
         # اگر tuple بود، تبدیل به Point کن
         if isinstance(point, (tuple, list)):
-            point = Point(point[0], point[1], srid=4326)
+            point = Point(point[0], point[1])
         
-        # محاسبه فاصله با استفاده از PostGIS
-        # transform به متر و تبدیل به کیلومتر
-        distance_m = self.location.distance(point) * 111320  # تبدیل degree به متر (تقریبی)
-        return distance_m / 1000  # تبدیل به کیلومتر
+        # محاسبه فاصله با استفاده از Haversine formula
+        return self.location.distance(point)
 
     def get_primary_image(self):
         return self.images.filter(is_primary=True).first()

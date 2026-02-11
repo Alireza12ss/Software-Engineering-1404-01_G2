@@ -18,7 +18,7 @@ from team4.serializers import (
     CategorySerializer, CitySerializer, AmenitySerializer,
     FacilityCreateSerializer, RegionSearchResultSerializer,
     FavoriteSerializer, ReviewSerializer, ReviewCreateSerializer,
-    FacilityFilterSerializer
+    FacilityFilterSerializer, NearbyPlaceSerializer
 )
 from team4.services.facility_service import FacilityService
 from team4.services.region_service import RegionService
@@ -61,6 +61,7 @@ class StandardResultsSetPagination(PageNumberPagination):
         description='Search facilities with filters (village, city, province, category, amenity)'
     ),
     nearby=extend_schema(tags=['Facilities']),
+    nearby_search=extend_schema(tags=['Facilities']),
     compare=extend_schema(tags=['Facilities']),
     reviews=extend_schema(tags=['Facilities']),
     emergency=extend_schema(tags=['Facilities']),
@@ -444,6 +445,108 @@ class FacilityViewSet(viewsets.ModelViewSet):
             return Response(comparison, status=status.HTTP_400_BAD_REQUEST)
         
         return Response(comparison)
+    
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(name='lat', type=OpenApiTypes.FLOAT, required=True, description='Latitude'),
+            OpenApiParameter(name='lng', type=OpenApiTypes.FLOAT, required=True, description='Longitude'),
+            OpenApiParameter(name='radius', type=OpenApiTypes.INT, required=True, description='Search radius in meters'),
+            OpenApiParameter(name='categories', type=OpenApiTypes.STR, required=False, description='Comma-separated category names'),
+            OpenApiParameter(name='price_tiers', type=OpenApiTypes.STR, required=False, description='Comma-separated price tiers (unknown,free,budget,moderate,expensive,luxury)'),
+        ],
+        responses={200: NearbyPlaceSerializer(many=True)}
+    )
+    @action(detail=False, methods=['get'], url_path='nearby')
+    def nearby_search(self, request):
+        """
+        Find nearby places from a specific location.
+        
+        Query Parameters:
+        - lat: Latitude (required)
+        - lng: Longitude (required)
+        - radius: Search radius in meters (required)
+        - categories: Comma-separated category names (optional)
+        - price_tiers: Comma-separated price tiers (optional)
+        
+        Returns list of nearby facilities with distance in meters.
+        """
+        # Validate required parameters
+        lat = request.query_params.get('lat')
+        lng = request.query_params.get('lng')
+        radius = request.query_params.get('radius')
+        
+        if not all([lat, lng, radius]):
+            return Response(
+                {'error': 'پارامترهای lat، lng و radius الزامی هستند'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            lat = float(lat)
+            lng = float(lng)
+            radius_meters = int(radius)
+            
+            if not (-90 <= lat <= 90):
+                raise ValueError('Latitude باید بین -90 تا 90 باشد')
+            if not (-180 <= lng <= 180):
+                raise ValueError('Longitude باید بین -180 تا 180 باشد')
+            if radius_meters <= 0:
+                raise ValueError('شعاع باید مثبت باشد')
+                
+        except ValueError as e:
+            return Response(
+                {'error': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Create center point
+        center_point = Point(lng, lat)
+        
+        # Start with base queryset
+        facilities = self.queryset
+        
+        # Filter by categories
+        categories_param = request.query_params.get('categories')
+        if categories_param:
+            category_list = [c.strip() for c in categories_param.split(',')]
+            facilities = facilities.filter(
+                Q(category__name_en__in=category_list) |
+                Q(category__name_fa__in=category_list)
+            )
+        
+        # Filter by price tiers
+        price_tiers_param = request.query_params.get('price_tiers')
+        if price_tiers_param:
+            tier_list = [t.strip() for t in price_tiers_param.split(',')]
+            facilities = facilities.filter(price_tier__in=tier_list)
+        
+        # Calculate distances and filter by radius
+        nearby_places = []
+        radius_km = radius_meters / 1000.0
+        
+        for facility in facilities:
+            if facility.location:
+                try:
+                    distance_km = facility.calculate_distance_to(center_point)
+                    if distance_km and distance_km <= radius_km:
+                        nearby_places.append({
+                            'facility': facility,
+                            'distance_meters': distance_km * 1000  # Convert to meters
+                        })
+                except:
+                    continue
+        
+        # Sort by distance
+        nearby_places.sort(key=lambda x: x['distance_meters'])
+        
+        # Paginate
+        page = self.paginate_queryset(nearby_places)
+        if page is not None:
+            serializer = NearbyPlaceSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        
+        serializer = NearbyPlaceSerializer(nearby_places, many=True)
+        return Response(serializer.data)
     
     @action(detail=True, methods=['get'])
     def reviews(self, request, pk=None):

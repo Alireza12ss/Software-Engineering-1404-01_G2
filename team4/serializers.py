@@ -193,6 +193,12 @@ class FacilityNearbySerializer(serializers.Serializer):
     driving_time_minutes = serializers.IntegerField(allow_null=True)
 
 
+class NearbyPlaceSerializer(serializers.Serializer):
+    """Serializer for nearby places with distance in meters"""
+    place = FacilityListSerializer(source='facility')
+    distance_meters = serializers.FloatField()
+
+
 class FacilityComparisonSerializer(serializers.Serializer):
     fac_id = serializers.IntegerField()
     name_fa = serializers.CharField()

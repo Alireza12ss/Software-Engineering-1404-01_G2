@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from django.db.models import Func, Value
+import math
 
 
 class Point:
@@ -17,6 +18,38 @@ class Point:
     
     def __iter__(self):
         return iter([self.longitude, self.latitude])
+    
+    def distance(self, other):
+        """
+        Calculate distance between two points using Haversine formula.
+        Returns distance in kilometers.
+        
+        Args:
+            other: Another Point object
+        
+        Returns:
+            float: Distance in kilometers
+        """
+        if not isinstance(other, Point):
+            raise TypeError("other must be a Point object")
+        
+        # Convert to radians
+        lat1 = math.radians(self.latitude)
+        lat2 = math.radians(other.latitude)
+        lon1 = math.radians(self.longitude)
+        lon2 = math.radians(other.longitude)
+        
+        # Haversine formula
+        dlat = lat2 - lat1
+        dlon = lon2 - lon1
+        
+        a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+        c = 2 * math.asin(math.sqrt(a))
+        
+        # Earth radius in kilometers
+        r = 6371
+        
+        return c * r
 
 
 class PointField(models.Field):
