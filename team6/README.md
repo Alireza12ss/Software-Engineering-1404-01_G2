@@ -39,6 +39,28 @@ During development, the service operates using Django's
 default database configuration within the project environment.
 ## Project Structure
 
+The Team6 module is organized as a standard Django application
+with a clear separation of concerns between models, views,
+services, templates, and routing.
+
+
+
+team6/
+├── models.py # Data models (articles, tags, categories, revisions, etc.)
+├── views.py # Core view logic and request handling
+├── urls.py # URL routing for the service
+├── services/ # Internal service logic (search, notifications, etc.)
+├── templates/team6/ # HTML templates
+├── migrations/ # Database schema migrations
+├── templatetags/ # Custom template utilities
+├── gateway.conf # Nginx configuration for the service gateway
+└── README.md # Service documentation
+
+
+The service follows Django best practices by separating
+business logic from routing and presentation layers,
+ensuring maintainability and scalability.
+
 ## How to Run
 
 ## URL Structure
