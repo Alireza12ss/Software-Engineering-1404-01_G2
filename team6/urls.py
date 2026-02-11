@@ -38,11 +38,10 @@ urlpatterns = [
 
     
     re_path(
-    r'^article/(?P<slug>[^/]+)/revisions/(?P<revision_no>\d+)/$',
-    views.article_revision_detail,
-    name="article_revision_detail"
-),
-    # re_path(r'^article/(?P<slug>[^/]+)/generate-ai/$', views.generate_ai_content_api, name='generate_ai'),
+        r'^article/(?P<slug>[^/]+)/revisions/(?P<revision_no>\d+)/$',
+        views.article_revision_detail,
+        name="article_revision_detail"
+    ),
     path("api/preview-ai/", views.preview_ai_content, name='preview_ai'),
     re_path(r'^article/(?P<slug>[^/]+)/follow/$', follow_article, name="article_follow"),
     re_path(r'^article/(?P<slug>[^/]+)/toggle-notify/$', toggle_notification, name="toggle_notify"),

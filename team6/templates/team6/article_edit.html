@@ -44,6 +44,14 @@
                     {% endfor %}
                 </select>
             </div>
+            <div class="mb-3">
+                <label class="form-label">آدرس تصویر شاخص (URL)</label>
+                <input type="url"
+                    name="featured_image_url"
+                    value="{{ article.featured_image_url }}"
+                    class="form-control">
+            </div>
+
 
             <div class="mb-4">
                 <label for="body_fa" class="form-label fw-bold d-flex justify-content-between align-items-center">

@@ -37,28 +37,6 @@ def generate_ai_content(article):
     except Exception as e:
         print(f"⚠️ خطا در تولید AI: {e}")
 
-# @receiver(post_save, sender=WikiArticle)
-# def handle_new_article(sender, instance, created, **kwargs):
-#     if created and instance.body_fa:
-#         def generate_ai():
-#             llm = FreeAIService()
-#             instance.summary = llm.generate_summary(instance.body_fa)
-#             instance.save(update_fields=['summary'])
-
-#             tags_list = llm.extract_tags(instance.body_fa, instance.title_fa)
-#             for tag_name in tags_list:
-#                 tag_name = tag_name.strip()
-#                 if not tag_name:
-#                     continue
-#                 with transaction.atomic():
-#                     tag_qs = WikiTag.objects.filter(title_fa=tag_name)
-#                     if tag_qs.exists():
-#                         tag = tag_qs.first()
-#                     else:
-#                         tag = WikiTag.objects.create(title_fa=tag_name)
-#                     instance.tags.add(tag)
-#         threading.Thread(target=generate_ai, daemon=True).start()
-
 @receiver(pre_save, sender=WikiArticle)
 def capture_real_old_state(sender, instance, **kwargs):
     """ذخیره وضعیت REAL قدیمی مقاله از دیتابیس"""

@@ -55,6 +55,15 @@
         <div class="card h-100 shadow-sm">
             <div class="card-body">
                 <h5 class="card-title">{{ article.title_fa }}</h5>
+                {% if article.featured_image_url %}
+                    <div class="article-image mb-2">
+                        <img src="{{ article.featured_image_url }}"
+                            alt="{{ article.title_fa }}"
+                            class="img-fluid rounded"
+                            style="width:100%; height:200px; object-fit:cover;">
+                    </div>
+                {% endif %}
+
 
                 <p class="card-text text-muted">
                     {% if article.summary %}
@@ -75,18 +84,6 @@
                     </small>
                 </div>
             </div>
-
-            <!-- <div class="card h-100 shadow-sm">
-                {% if article.featured_image_url %}
-                    <img src="{{ article.featured_image_url }}" class="card-img-top" alt="{{ article.title_fa }}">
-                {% elif article.featured_image %}
-                    <img src="{{ article.featured_image.url }}" class="card-img-top" alt="{{ article.title_fa }}">
-                {% endif %}
-                <div class="card-body">
-                    <h5 class="card-title">{{ article.title_fa }}</h5>
-                    <p class="card-text text-muted">{{ article.body_fa|truncatewords:25 }}</p>
-                </div>
-            </div> -->
             <div class="card-footer bg-transparent d-flex gap-2">
                 <a href="{% url 'team6:article_detail' article.slug %}"
                    class="btn btn-outline-primary btn-sm flex-fill">

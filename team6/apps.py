@@ -6,5 +6,4 @@ class Team6Config(AppConfig):
     name = 'team6'
 
     def ready(self):
-        # ثبت سیگنال‌ها
         import team6.signals
