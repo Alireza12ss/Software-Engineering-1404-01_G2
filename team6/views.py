@@ -251,6 +251,7 @@ class ArticleCreateView(CreateView):
             article.body_en = article.body_fa
 
         # تولید خلاصه و تگ با AI
+    if not article.summary or not article.summary.strip():
         try:
             llm = FreeAIService()
             
