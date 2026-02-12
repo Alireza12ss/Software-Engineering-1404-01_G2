@@ -14,12 +14,14 @@ import PlaceCard from './components/PlaceCard';
 import RoutingPanel from './components/RoutingPanel';
 import FavoritesPanel from './components/FavoritesPanel';
 import { Place } from './data/mockPlaces';
-import { Route } from './data/mockRoutes';
 import placesService from './services/placesService';
+import { Route } from './data/types';
+import polyline from "@mapbox/polyline";
+import MapCenterListener from './components/MapCenterListener';
 import { favoritesService, FavoritePlace } from './services/favoritesService';
 
 function App() {
-  const [mapCenter, setMapCenter] = useState<[number, number]>([40.7589, -73.9851]);
+  const [mapCenter, setMapCenter] = useState<[number, number]>([35.729054, 51.42047]);
   const [allPlaces, setAllPlaces] = useState<Place[]>([]);
   const [filteredPlaces, setFilteredPlaces] = useState<Place[]>([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -174,7 +176,7 @@ function App() {
     source: [number, number],
     destination: [number, number]
   ) => {
-    setRoute(calculatedRoute.coordinates);
+    setRoute(polyline.decode(calculatedRoute.overview_polyline.points));
     setSourceMarker(source);
     setDestinationMarker(destination);
     const midLat = (source[0] + destination[0]) / 2;
@@ -277,6 +279,10 @@ function App() {
     setSourceMarker(null);
     setDestinationMarker(null);
   };
+
+  const handleNearbyPlaces = (places: Place[]) => {
+    setAllPlaces(places);
+  }
 
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-gray-50">
@@ -407,6 +413,7 @@ function App() {
             route={route}
             sourceMarker={sourceMarker}
             destinationMarker={destinationMarker}
+            onFindNearbyPlaces={handleNearbyPlaces}
           />
 
           {selectedPlace && (
@@ -443,6 +450,7 @@ function App() {
               />
             </div>
           )}
+
         </main>
       </div>
     </div>

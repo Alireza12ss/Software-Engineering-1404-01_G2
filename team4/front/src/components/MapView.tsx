@@ -6,6 +6,7 @@ import { Place } from '../data/mockPlaces';
 import polyline from "@mapbox/polyline";
 import Routing from './Routing';
 import { Star } from 'lucide-react';
+import MapCenterListener from './MapCenterListener';
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -22,6 +23,7 @@ interface MapViewProps {
   route: [number, number][] | null;
   sourceMarker: [number, number] | null;
   destinationMarker: [number, number] | null;
+  onFindNearbyPlaces: (places: Place[]) => void;
 }
 
 function MapController({ center }: { center: [number, number] }) {
@@ -76,6 +78,7 @@ export default function MapView({
   route,
   sourceMarker,
   destinationMarker,
+  onFindNearbyPlaces
 }: MapViewProps) {
 
   const decoded = polyline.decode(
@@ -85,7 +88,7 @@ export default function MapView({
   return (
     <MapContainer
       center={center}
-      zoom={13}
+      zoom={12}
       zoomControl={false}
       style={{ height: '100%', width: '100%' }}
       className="z-0"
@@ -148,14 +151,15 @@ export default function MapView({
       {route && (
         <Polyline
           positions={route}
-          color="#3b82f6"
+          color="#2845D6"
           weight={4}
-          opacity={0.7}
         />
       )}
 
       {/* <Polyline positions={decoded} color='red'/> */}
       <Routing />
+
+      <MapCenterListener onFindPlaces={onFindNearbyPlaces} />
     </MapContainer>
   );
 }

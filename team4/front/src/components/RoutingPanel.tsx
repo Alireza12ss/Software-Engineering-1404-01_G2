@@ -255,9 +255,9 @@ export default function RoutingPanel({ onRouteCalculated, onClose }: RoutingPane
                 <div className="flex-1">
                   <p className="text-gray-800 mb-1">{step.instruction || step.name}</p>
                   <div className="flex items-center text-sm text-gray-600">
-                    <span>{routingService.formatDistance(step.distance)}</span>
+                    <span>{step.distance}</span>
                     <ArrowLeft className="w-3 h-3 mx-2" />
-                    <span>{routingService.formatDuration(step.duration)}</span>
+                    <span>{step.duration}</span>
                   </div>
                 </div>
               </div>
