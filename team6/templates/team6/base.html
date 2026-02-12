@@ -227,9 +227,11 @@
             <a href="{% url 'team6:index' %}">
                 <i class="fa-solid fa-list"></i> لیست مقالات
             </a>
+            {% if request.user.is_authenticated %}
             <a href="{% url 'team6:article_add' %}">
                 <i class="fa-solid fa-plus"></i> ایجاد مقاله جدید
             </a>
+            {% endif %}
             {% if request.user.is_authenticated %}
                 <a href="{% url 'team6:notifications_list' %}" class="position-relative">
                     <i class="fa-solid fa-bell"></i> اعلان‌های من
