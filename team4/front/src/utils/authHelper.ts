@@ -59,7 +59,7 @@ export const authHelper = {
    */
   getAuthHeaders(): HeadersInit {
     const token = this.getToken();
-    const csrfToken = getCSRFToken();
+    const csrfToken = '6JaG3lhnD2uYLCP8yqWbZcmPCRsP16M4';
     
     const headers: HeadersInit = {
       'Content-Type': 'application/json',
@@ -76,3 +76,4 @@ export const authHelper = {
     return headers;
   }
 };
+
