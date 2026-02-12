@@ -5,6 +5,7 @@ import {
   Menu,
   X,
   MapPin,
+  Star,
 } from 'lucide-react';
 import MapView from './components/MapView';
 import SearchBar from './components/SearchBar';
@@ -36,7 +37,7 @@ function App() {
   const [favoritePlaceIds, setFavoritePlaceIds] = useState<Set<string>>(new Set());
 
   const cardStyle = 
-    "absolute right-4 top-4 w-96 max-w-[90vw] h-[90%] z-10 overflow-auto rounded-lg";
+    "absolute end-4 top-4 w-96 max-w-[90vw] h-[90%] z-10 overflow-auto rounded-lg";
 
   // Load facilities on mount
   useEffect(() => {
@@ -183,34 +184,35 @@ function App() {
       <header className="bg-white shadow-md z-50">
         <div className="px-4 py-4">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center">
-              <MapPin className="w-8 h-8 text-blue-600 mr-2" />
-              <h1 className="text-2xl font-bold text-gray-800">ExploreMap</h1>
+            <div className="flex items-center gap-2">
+              <MapPin className="w-8 h-8 text-orange-600" />
+              <h1 className="text-2xl font-bold text-gray-800 hidden sm:inline">نقشه امکانات رفاهی</h1>
+              <h1 className="text-2xl font-bold text-gray-800 inline sm:hidden">نار</h1>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center gap-2">
               <button
                 onClick={() => setShowRouting(!showRouting)}
-                className={`flex items-center px-4 py-2 rounded-lg font-medium transition-colors ${
+                className={`flex items-center px-4 py-2 gap-2 rounded-lg font-medium transition-colors ${
                   showRouting
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                <Navigation className="w-5 h-5 mr-2" />
-                <span className="hidden sm:inline">Routing</span>
+                <Navigation className="w-6 h-6 fill-current" />
+                <span className="hidden sm:inline">مسیریابی</span>
               </button>
 
               <button
                 onClick={() => setShowFavorites(!showFavorites)}
-                className={`flex items-center px-4 py-2 rounded-lg font-medium transition-colors ${
+                className={`flex items-center px-4 py-2 gap-2 rounded-lg font-medium transition-colors ${
                   showFavorites
                     ? 'bg-red-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
-                <Heart className="w-5 h-5 mr-2" />
-                <span className="hidden sm:inline">Favorites</span>
+                <Heart className="w-6 h-6 fill-current" />
+                <span className="hidden sm:inline">علاقه مندی ها</span>
                 {/* favorites.length > 0 && (
                   <span className="ml-2 bg-white text-red-600 text-xs font-bold px-2 py-1 rounded-full">
                     {favorites.length}
@@ -222,7 +224,7 @@ function App() {
                 onClick={() => setShowSidebar(!showSidebar)}
                 className="lg:hidden flex items-center px-3 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
               >
-                {showSidebar ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                {showSidebar ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
             </div>
           </div>
@@ -236,7 +238,7 @@ function App() {
       <div className="flex-1 flex overflow-hidden">
         <aside
           className={`${
-            showSidebar ? 'translate-x-0' : '-translate-x-full'
+            showSidebar ? 'translate-x-0' : 'translate-x-full'
           } lg:translate-x-0 fixed lg:relative z-20 w-80 h-[-webkit-fill-available] bg-white shadow-lg transition-transform duration-300 overflow-y-auto`}
         >
           <div className="p-4 space-y-4">
@@ -247,48 +249,46 @@ function App() {
 
             <div>
               <h3 className="text-lg font-semibold text-gray-800 mb-3">
-                Nearby Places ({filteredPlaces.length})
+                مکان های نزدیک ({filteredPlaces.length})
               </h3>
               {isLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                  <span className="ml-3 text-gray-600">Loading places...</span>
+                  <span className="ml-3 text-gray-600">بارگذاری...</span>
                 </div>
               ) : filteredPlaces.length === 0 ? (
                 <div className="text-center py-8 text-gray-500">
-                  <p>No places found</p>
-                  <p className="text-sm mt-2">Try changing your filters</p>
+                  <p>مکانی یافت نشد</p>
+                  <p className="text-sm mt-2">دسته بندی را عوض کنید</p>
                 </div>
               ) : (
                 <div className="space-y-3">
                   {filteredPlaces.map((place) => (
                     <button
-                      key={place.id}
-                      onClick={() => handlePlaceSelect(place)}
-                      className="w-full text-left p-3 border border-gray-200 rounded-lg hover:border-blue-500 hover:shadow-md transition-all"
-                    >
-                      <div className="flex items-start">
-                        <img
-                          src={place.images[0]}
-                          alt={place.name}
-                          className="w-16 h-16 object-cover rounded-lg mr-3"
-                        />
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-gray-800 truncate">
-                            {place.name}
-                          </h4>
-                          <p className="text-sm text-gray-600 capitalize">
-                            {place.category}
-                          </p>
-                          <div className="flex items-center mt-1">
-                            <span className="text-yellow-500 text-sm">★</span>
-                            <span className="text-sm font-medium text-gray-800 ml-1">
-                              {place.rating}
-                            </span>
-                          </div>
+                    key={place.id}
+                    onClick={() => handlePlaceSelect(place)}
+                    className="w-full text-start p-3 border border-gray-200 rounded-lg hover:border-orange-500 hover:shadow-md transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={place.images[0]}
+                        alt={place.name}
+                        className="w-16 h-16 object-cover rounded-lg"
+                      />
+                      <div className="flex flex-col gap-1 min-w-0">
+                        <h4 className="font-semibold text-gray-800 truncate">
+                          {place.name}
+                        </h4>
+                        <p className="text-sm text-gray-600 uppercase">
+                          {place.category}
+                        </p>
+                        <div className="flex items-center bg-yellow-100 px-1 w-fit gap-1 rounded-full">
+                          <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                          <span className="font-semibold text-gray-800">{place.rating}</span>
                         </div>
                       </div>
-                    </button>
+                    </div>
+                  </button>
                   ))}
                 </div>
               )}

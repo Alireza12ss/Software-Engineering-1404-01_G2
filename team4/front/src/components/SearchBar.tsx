@@ -37,21 +37,21 @@ export default function SearchBar({ onLocationSelect }: SearchBarProps) {
 
   return (
     <div className="relative w-full">
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+      <div className="flex items-center w-full px-4 gap-2 border-2 border-gray-300 rounded-lg focus-within:outline-none focus-within:ring-2 focus-within:ring-green-500 focus-within:border-transparent">
+        <Search className="transform text-green-500 w-6 h-6" />
         <input
           type="text"
           value={query}
           onChange={(e) => handleSearch(e.target.value)}
-          placeholder="Search for a location..."
-          className="w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder="جستجوی مکان ها..."
+          className="w-full py-3 focus:outline-none"
         />
         {query && (
           <button
             onClick={handleClear}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            className="text-gray-500 hover:text-gray-700"
           >
-            <X className="w-5 h-5" />
+            <X className="w-6 h-6" />
           </button>
         )}
       </div>

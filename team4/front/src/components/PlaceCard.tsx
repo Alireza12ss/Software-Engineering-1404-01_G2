@@ -109,30 +109,30 @@ export default function PlaceCard({
         <div className="mb-4">
           <div className="flex items-start justify-between mb-2">
             <h2 className="text-2xl font-bold text-gray-800">{place.name}</h2>
-            <div className="flex items-center bg-yellow-100 px-3 py-1 rounded-full">
-              <Star className="w-5 h-5 text-yellow-500 fill-current mr-1" />
+            <div className="flex items-center bg-yellow-100 px-3 py-1 gap-1 rounded-full">
+              <Star className="w-5 h-5 text-yellow-500 fill-current" />
               <span className="font-semibold text-gray-800">{place.rating}</span>
             </div>
           </div>
 
-          <div className="flex items-center text-gray-600 mb-2">
-            <MapPin className="w-4 h-4 mr-2" />
+          <div className="flex items-center gap-2 text-gray-600 mb-2">
+            <MapPin className="w-4 h-4" />
             <span className="text-sm">{place.address}</span>
           </div>
 
-          <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-sm font-medium rounded-full capitalize">
+          <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-sm font-medium rounded-full uppercase">
             {place.category}
           </span>
         </div>
 
         <div className="mb-6">
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">About</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">درباره اینجا</h3>
           <p className="text-gray-600 leading-relaxed">{place.description}</p>
         </div>
 
         <div>
           <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            Reviews ({place.reviews.length})
+            دیدگاه ها ({place.reviews.length})
           </h3>
           <div className="space-y-4">
             {place.reviews.map((review) => (

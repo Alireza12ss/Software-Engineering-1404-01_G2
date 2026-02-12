@@ -18,9 +18,9 @@ export default function FavoritesPanel({
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 max-h-[80vh] overflow-y-auto">
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center">
-          <Heart className="w-6 h-6 text-red-500 fill-current mr-2" />
-          <h2 className="text-xl font-semibold text-gray-800">My Favorites</h2>
+        <div className="flex items-center gap-2">
+          <Heart className="w-7 h-7 text-red-500 fill-current" />
+          <h2 className="text-xl font-semibold text-gray-800">علاقه مندی های من</h2>
         </div>
         <button
           onClick={onClose}
@@ -33,9 +33,9 @@ export default function FavoritesPanel({
       {favorites.length === 0 ? (
         <div className="text-center py-12">
           <Heart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500">No favorites yet</p>
+          <p className="text-gray-500">هنوز علاقه مندی ندارید</p>
           <p className="text-sm text-gray-400 mt-2">
-            Start adding places to your favorites to see them here
+            مکان ها را به علاقه مندی های خود اضافه کنید تا آنها را اینجا مشاهده کنید
           </p>
         </div>
       ) : (

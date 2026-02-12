@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Navigation, MapPin, Clock, ArrowRight, X, Building2, MapPinned } from 'lucide-react';
+import { Navigation, MapPin, Clock, X, Building2, MapPinned, ArrowLeft } from 'lucide-react';
 import { routingService, SearchResult, RouteResponse } from '../services/routingService';
 
 interface RoutingPanelProps {
@@ -130,9 +130,9 @@ export default function RoutingPanel({ onRouteCalculated, onClose }: RoutingPane
   return (
     <div className="bg-white p-6">
       <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center">
-          <Navigation className="w-6 h-6 text-blue-600 mr-2" />
-          <h2 className="text-xl font-semibold text-gray-800">برنامه‌ریزی مسیر</h2>
+        <div className="flex items-center gap-2">
+          <Navigation className="w-7 h-7 text-blue-600 fill-current" />
+          <h2 className="text-xl font-semibold text-gray-800">مسیریابی</h2>
         </div>
         <button
           onClick={onClose}
@@ -144,15 +144,15 @@ export default function RoutingPanel({ onRouteCalculated, onClose }: RoutingPane
 
       <div className="space-y-4 mb-6">
         <div className="relative">
-          <label className="block text-sm font-medium text-gray-700 mb-2">مبدا</label>
-          <div className="relative">
-            <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#22c55e] w-5 h-5" />
+          <label className="block text-sm font-bold text-gray-700 mb-2">مبدا</label>
+          <div className="flex items-center px-3 gap-2 border border-gray-300 rounded-lg focus-within:outline-none focus-within:ring-2 focus-within:ring-green-500">
+            <MapPin className="transform text-[#22c55e] w-5 h-5" />
             <input
               type="text"
               value={sourceQuery}
               onChange={(e) => handleSourceSearch(e.target.value)}
-              placeholder="نقطه شروع را جستجو کنید..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="مبدا را وارد کنید..."
+              className="w-full py-2 focus:outline-none"
             />
           </div>
           {showSourceResults && sourceResults.length > 0 && (
@@ -182,15 +182,15 @@ export default function RoutingPanel({ onRouteCalculated, onClose }: RoutingPane
         </div>
 
         <div className="relative">
-          <label className="block text-sm font-medium text-gray-700 mb-2">مقصد</label>
-          <div className="relative">
-            <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#ef4444] w-5 h-5" />
+          <label className="block text-sm font-bold text-gray-700 mb-2">مقصد</label>
+          <div className="flex items-center px-3 gap-2 border border-gray-300 rounded-lg focus-within:outline-none focus-within:ring-2 focus-within:ring-green-500">
+            <MapPin className="transform text-[#ef4444] w-5 h-5" />
             <input
               type="text"
               value={destQuery}
               onChange={(e) => handleDestSearch(e.target.value)}
-              placeholder="مقصد را جستجو کنید..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="مقصد را وارد کنید..."
+              className="w-full py-2 focus:outline-none"
             />
           </div>
           {showDestResults && destResults.length > 0 && (
@@ -222,7 +222,7 @@ export default function RoutingPanel({ onRouteCalculated, onClose }: RoutingPane
         <button
           onClick={handleCalculateRoute}
           disabled={!selectedSource || !selectedDest || isCalculating}
-          className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+          className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
         >
           {isCalculating ? 'در حال محاسبه...' : 'محاسبه مسیر'}
         </button>
@@ -230,33 +230,33 @@ export default function RoutingPanel({ onRouteCalculated, onClose }: RoutingPane
 
       {currentRoute && currentRoute.routes && currentRoute.routes.length > 0 && (
         <div className="border-t pt-6">
-          <div className="flex items-center justify-between mb-4 p-4 bg-blue-50 rounded-lg">
-            <div className="flex items-center">
-              <Navigation className="w-5 h-5 text-blue-600 mr-2" />
+          <div className="flex items-center justify-between mb-4 p-4 bg-green-50 rounded-lg">
+            <div className="flex items-center gap-2">
+              <Navigation className="w-5 h-5 text-green-600" />
               <span className="font-medium text-gray-800">
                 {currentRoute.routes[0].legs[0].distance.text}
               </span>
             </div>
-            <div className="flex items-center">
-              <Clock className="w-5 h-5 text-blue-600 mr-2" />
+            <div className="flex items-center gap-2">
+              <Clock className="w-5 h-5 text-green-600" />
               <span className="font-medium text-gray-800">
                 {currentRoute.routes[0].legs[0].duration.text}
               </span>
             </div>
           </div>
 
-          <h3 className="font-semibold text-gray-800 mb-3">مسیریابی</h3>
+          <h3 className="font-semibold text-gray-800 mb-3">مراحل مسیر</h3>
           <div className="space-y-3">
             {currentRoute.routes[0].legs[0].steps.map((step, index) => (
-              <div key={index} className="flex items-start p-3 bg-gray-50 rounded-lg">
-                <div className="flex-shrink-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-medium mr-3">
+              <div key={index} className="flex items-start p-3 gap-3 bg-green-50 rounded-lg">
+                <div className="flex-shrink-0 w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center text-lg font-bold">
                   {index + 1}
                 </div>
                 <div className="flex-1">
                   <p className="text-gray-800 mb-1">{step.instruction || step.name}</p>
                   <div className="flex items-center text-sm text-gray-600">
                     <span>{routingService.formatDistance(step.distance)}</span>
-                    <ArrowRight className="w-3 h-3 mx-2" />
+                    <ArrowLeft className="w-3 h-3 mx-2" />
                     <span>{routingService.formatDuration(step.duration)}</span>
                   </div>
                 </div>

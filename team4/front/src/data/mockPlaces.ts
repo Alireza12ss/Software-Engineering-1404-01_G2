@@ -263,13 +263,13 @@ export const mockPlaces: Place[] = [
 ];
 
 export const categories = [
-  { id: 'all', name: 'All Places', icon: 'MapPin' },
-  { id: 'restaurant', name: 'Restaurants', icon: 'Utensils' },
-  { id: 'hotel', name: 'Hotels', icon: 'Building' },
-  { id: 'cafe', name: 'Cafes', icon: 'Coffee' },
-  { id: 'park', name: 'Parks', icon: 'Trees' },
-  { id: 'museum', name: 'Museums', icon: 'Landmark' },
-  { id: 'theater', name: 'Theaters', icon: 'Theater' },
-  { id: 'gym', name: 'Gyms', icon: 'Dumbbell' },
-  { id: 'shopping', name: 'Shopping', icon: 'ShoppingBag' },
+  { id: 'all', name: 'همه', icon: 'MapPin' },
+  { id: 'restaurant', name: 'رستوران', icon: 'Utensils' },
+  { id: 'hotel', name: 'هتل', icon: 'Building' },
+  { id: 'cafe', name: 'کافه', icon: 'Coffee' },
+  { id: 'park', name: 'پارک', icon: 'Trees' },
+  { id: 'museum', name: 'موزه', icon: 'Landmark' },
+  { id: 'theater', name: 'تئاتر', icon: 'Theater' },
+  { id: 'gym', name: 'باشگاه', icon: 'Dumbbell' },
+  { id: 'shopping', name: 'مرکز خرید', icon: 'ShoppingBag' },
 ];

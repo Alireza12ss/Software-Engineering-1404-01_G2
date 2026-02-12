@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, useMap, ZoomControl } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Place } from '../data/mockPlaces';
 import polyline from "@mapbox/polyline";
 import Routing from './Routing';
+import { Star } from 'lucide-react';
 
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -85,6 +86,7 @@ export default function MapView({
     <MapContainer
       center={center}
       zoom={13}
+      zoomControl={false}
       style={{ height: '100%', width: '100%' }}
       className="z-0"
     >
@@ -93,6 +95,7 @@ export default function MapView({
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <MapController center={center} />
+      <ZoomControl position='bottomright' />
       {/* <Routing source={[40.7589, -73.9851]} destination={[40.7614, -73.9776]} /> */}
 
       {places.map((place) => (
@@ -105,10 +108,22 @@ export default function MapView({
           }}
         >
           <Popup>
-            <div className="text-sm">
-              <h3 className="font-semibold">{place.name}</h3>
-              <p className="text-gray-600">{place.category}</p>
-              <p className="text-yellow-500">★ {place.rating}</p>
+            <div className="flex flex-col items-center gap-2 text-sm min-w-32">
+              <h3 className="font-semibold mb-1">{place.name}</h3>
+              <div className="flex gap-2 justify-center">
+                <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-sm font-medium rounded-full uppercase">
+                {place.category}
+                </span>
+                <div className="flex items-center bg-yellow-100 px-3 py-1 gap-1 w-fit rounded-full">
+                  <Star className="w-5 h-5 text-yellow-500 fill-current" />
+                  <span className="font-semibold text-gray-800">{place.rating}</span>
+                </div>
+              </div>
+              <button
+                className="w-full bg-blue-600 text-white py-2 rounded-full font-medium hover:bg-blue-700 transition-colors"
+              >
+                مسیریابی
+              </button>
             </div>
           </Popup>
         </Marker>
@@ -117,7 +132,7 @@ export default function MapView({
       {sourceMarker && (
         <Marker position={sourceMarker} icon={sourceIcon}>
           <Popup>
-            <div className="text-sm font-semibold">Source</div>
+            <div className="text-sm font-semibold">مبدا</div>
           </Popup>
         </Marker>
       )}
@@ -125,7 +140,7 @@ export default function MapView({
       {destinationMarker && (
         <Marker position={destinationMarker} icon={destinationIcon}>
           <Popup>
-            <div className="text-sm font-semibold">Destination</div>
+            <div className="text-sm font-semibold">مقصد</div>
           </Popup>
         </Marker>
       )}
