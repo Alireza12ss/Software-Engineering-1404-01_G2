@@ -55,14 +55,14 @@ function App() {
     }
   };
 
-  // Filter places when category changes
-  useEffect(() => {
-    if (selectedCategory === 'all') {
-      setFilteredPlaces(allPlaces);
-    } else {
-      setFilteredPlaces(allPlaces.filter((place) => place.category === selectedCategory));
-    }
-  }, [selectedCategory, allPlaces]);
+  // Filter places when category changes (removed - now handled in handleCategoryChange)
+  // useEffect(() => {
+  //   if (selectedCategory === 'all') {
+  //     setFilteredPlaces(allPlaces);
+  //   } else {
+  //     setFilteredPlaces(allPlaces.filter((place) => place.category === selectedCategory));
+  //   }
+  // }, [selectedCategory, allPlaces]);
 
   // Load favorites when panel opens
   useEffect(() => {

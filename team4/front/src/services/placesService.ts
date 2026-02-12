@@ -168,7 +168,7 @@ class PlacesService {
     is_24_hour?: boolean;
   }): Promise<Place[]> {
     try {
-      const url = getApiUrl(API_CONFIG.ENDPOINTS.FACILITIES);
+      const url = getApiUrl(API_CONFIG.ENDPOINTS.FACILITIES) + "search/";
 
       const response = await fetch(url, {
         method: 'POST',
