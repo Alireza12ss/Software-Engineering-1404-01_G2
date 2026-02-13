@@ -181,6 +181,9 @@ python manage.py load_hotels
 ‍‍‍```powershell
 python manage.py load_hospitals
 ```
+```powershell
+python manage.py load_restaurants
+```
 
 
 

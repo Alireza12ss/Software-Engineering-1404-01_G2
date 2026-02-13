@@ -1,36 +1,44 @@
 from django.core.management.base import BaseCommand
-from team4.models import City, Province, Village
+from team4.models import Facility, City, Province, Category, Amenity, Village
 
 class Command(BaseCommand):
-    help = 'Show database statistics for Provinces, Cities, and Villages'
+    help = 'Displays statistics for all imported data'
+
+    def add_arguments(self, parser):
+        parser.add_argument('--database', type=str, default='team4')
 
     def handle(self, *args, **options):
-        # Fetching counts from the 'team4' database
-        province_count = Province.objects.using('team4').count()
-        city_count = City.objects.using('team4').count()
-        village_count = Village.objects.using('team4').count()
-        
-        self.stdout.write(self.style.SUCCESS(f'\n📊 آمار دیتابیس (MySQL):'))
-        self.stdout.write(f'  ✓ تعداد استان‌ها: {province_count}')
-        self.stdout.write(f'  ✓ تعداد شهرها: {city_count}')
-        self.stdout.write(f'  ✓ تعداد روستاها: {village_count}')
-        
-        # Display Sample Cities
-        if city_count > 0:
-            self.stdout.write(self.style.MIGRATE_LABEL(f'\n📍 نمونه شهرها:'))
-            cities = City.objects.using('team4').select_related('province')[:5]
-            for city in cities:
-                location_str = f'({city.longitude}, {city.latitude})' if city.location else 'بدون موقعیت'
-                self.stdout.write(f'  • {city.name_fa} ({city.province.name_fa}) - مختصات: {location_str}')
+        db = options['database']
 
-        # Display Sample Villages
-        if village_count > 0:
-            self.stdout.write(self.style.MIGRATE_LABEL(f'\n🏡 نمونه روستاها:'))
-            # Using select_related for city to avoid multiple DB hits (N+1 problem)
-            villages = Village.objects.using('team4').select_related('city')[:5]
-            for village in villages:
-                location_str = f'({village.longitude}, {village.latitude})' if village.location else 'بدون موقعیت'
-                self.stdout.write(f'  • {village.name_fa} (شهر: {village.city.name_fa}) - مختصات: {location_str}')
+        self.stdout.write(self.style.MIGRATE_HEADING('\n📊 --- Database Statistics ---'))
+
+        # Define the models to count
+        stats = [
+            ('Provinces', Province),
+            ('Cities', City),
+            ('Villages', Village),
+            ('Categories', Category),
+            ('Amenities', Amenity),
+        ]
+
+        # 1. Show Infrastructure Stats
+        for label, model in stats:
+            count = model.objects.using(db).count()
+            self.stdout.write(f'{label:12}: {count}')
+
+        self.stdout.write(self.style.MIGRATE_HEADING('\n🏥 --- Facilities Breakdown ---'))
+
+        # 2. Show Facility breakdown by Category
+        facilities = Facility.objects.using(db).all()
+        total_facilities = facilities.count()
+
+        # Breakdown by categories found in the database
+        facility_types = Category.objects.using(db).all()
         
-        if province_count == 0 and city_count == 0 and village_count == 0:
-            self.stdout.write(self.style.WARNING('\n⚠ دیتابیس خالی است. ابتدا دستورات load را اجرا کنید.'))
+        for cat in facility_types:
+            count = facilities.filter(category=cat).count()
+            if count > 0:
+                self.stdout.write(f'{cat.name_fa:12}: {count} ({cat.name_en})')
+
+        self.stdout.write(self.style.SUCCESS(f'\nTotal Facilities: {total_facilities}'))
+        self.stdout.write(self.style.MIGRATE_HEADING('-----------------------------\n'))
