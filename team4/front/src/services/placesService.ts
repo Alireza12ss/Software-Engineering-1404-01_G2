@@ -1,6 +1,8 @@
 import { getApiUrl, API_CONFIG } from '../config/api';
-import { Place, Review } from '../data/mockPlaces';
+import { categories, Place, Review } from '../data/mockPlaces';
 import { authHelper } from '../utils/authHelper';
+
+const API_BASE = window.location.origin;
 
 interface City {
   city_id: number;
@@ -154,7 +156,7 @@ class PlacesService {
   page_size?: number;
 }): Promise<Place[]> {
   try {
-    const url = new URL(getApiUrl(API_CONFIG.ENDPOINTS.FACILITIES));
+    const url = new URL(getApiUrl(API_CONFIG.ENDPOINTS.FACILITIES), API_BASE);
 
     // Add query parameters
     if (params?.page) {
@@ -218,22 +220,14 @@ class PlacesService {
     try {
       const url = getApiUrl(API_CONFIG.ENDPOINTS.FACILITIES) + "search/";
 
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: authHelper.getAuthHeaders(),
-        credentials: 'include',
-        body: JSON.stringify(filters),
-      });
-
       let allFacilities: BackendFacility[] = [];
       let nextUrl: string | null = url.toString();
 
       while (nextUrl) {
-        const response = await fetch(nextUrl, {
+        const response = await fetch(url, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: authHelper.getAuthHeaders(),
+          credentials: 'include',
           body: JSON.stringify(filters),
         });
 
@@ -248,10 +242,6 @@ class PlacesService {
 
         // Move to next page
         nextUrl = data.next;
-      }
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
       }
       
       return allFacilities.map(facility => transformFacilityToPlace(facility));
@@ -311,7 +301,7 @@ class PlacesService {
    */
   async getFacilityReviews(facilityId: string): Promise<Review[]> {
     try {
-      const url = new URL(getApiUrl(API_CONFIG.ENDPOINTS.REVIEWS));
+      const url = new URL(getApiUrl(API_CONFIG.ENDPOINTS.REVIEWS), API_BASE);
       url.searchParams.append('facility_id', facilityId);
 
       const response = await fetch(url.toString(), {
@@ -380,13 +370,13 @@ class PlacesService {
     lat: number;
     lng: number;
     radius: number;
-    categories?: string[];
+    categories?: string;
     price_tiers?: string[];
     page?: number;
     page_size?: number;
   }): Promise<Place[]> {
     try {
-      const url = new URL(getApiUrl(API_CONFIG.ENDPOINTS.FACILITIES) + "nearby/");
+      const url = new URL(getApiUrl(API_CONFIG.ENDPOINTS.FACILITIES) + "nearby/", API_BASE);
 
       url.searchParams.append('lat', params.lat.toString());
       url.searchParams.append('lng', params.lng.toString());
@@ -400,22 +390,36 @@ class PlacesService {
         url.searchParams.append('page_size', params.page_size.toString());
       }
 
-      const response = await fetch(url.toString(), {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      if (params.categories)
+        url.searchParams.append('categories', params.categories);
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+      let nearbyFacilities: NearbyFacility[] = [];
+      let nextUrl: string | null = url.toString();
+
+      while (nextUrl) {
+        const response = await fetch(nextUrl, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data: NearbyFacilityListResponse = await response.json();
+
+        // Collect results
+        nearbyFacilities = [...nearbyFacilities, ...data.results];
+
+        // Move to next page
+        nextUrl = data.next;
       }
-
-      const data: NearbyFacilityListResponse = await response.json();
-      console.log(data);
       
       // Transform backend data to frontend format
-      return data.results.map(facility => transformFacilityToPlace(facility.place));
+      return nearbyFacilities.map(facility => transformFacilityToPlace(facility.place));
     } catch (error) {
       console.error('Error fetching facilities:', error);
       // Return empty array on error instead of throwing
