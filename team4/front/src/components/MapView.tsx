@@ -130,6 +130,30 @@ export default function MapView({
         </Marker>
       ))}
 
+      {/* Selected Place Marker with auto-opened popup */}
+      {selectedPlace && (
+        <Marker
+          key={`selected-${selectedPlace.id}`}
+          position={[selectedPlace.latitude, selectedPlace.longitude]}
+          icon={placesIcon}
+        >
+          <Popup autoClose={false} closeOnClick={false}>
+            <div className="flex flex-col items-center gap-2 text-sm min-w-32">
+              <h3 className="font-semibold mb-1">{selectedPlace.name}</h3>
+              <div className="flex gap-2 justify-center">
+                <span className="inline-block px-3 py-1 bg-blue-100 text-blue-700 text-sm font-medium rounded-full uppercase">
+                {selectedPlace.category}
+                </span>
+                <div className="flex items-center bg-yellow-100 px-3 py-1 gap-1 w-fit rounded-full">
+                  <Star className="w-5 h-5 text-yellow-500 fill-current" />
+                  <span className="font-semibold text-gray-800">{selectedPlace.rating}</span>
+                </div>
+              </div>
+            </div>
+          </Popup>
+        </Marker>
+      )}
+
       {sourceMarker && (
         <Marker position={sourceMarker} icon={sourceIcon}>
           <Popup>

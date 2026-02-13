@@ -119,7 +119,7 @@ const transformFacilityToPlace = (facility: BackendFacility, reviews: Review[] =
   
   return {
     id: facility.fac_id.toString(),
-    name: facility.name_en || facility.name_fa || 'Unknown',
+    name: facility.name_fa || facility.name_en ||  'Unknown',
     category: categoryStr.toLowerCase(),
     latitude: lat,
     longitude: lng,

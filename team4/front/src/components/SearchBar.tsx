@@ -58,11 +58,11 @@ export default function SearchBar({ onLocationSelect, onPlaceSelect }: SearchBar
     setQuery(result.name);
     setShowResults(false);
     
-    // If onPlaceSelect is provided, use it to open the place card
+    // If onPlaceSelect is provided, use it to open the place card with popup
     if (onPlaceSelect) {
       onPlaceSelect(result.fac_id);
     } else {
-      // Fallback to just moving the map
+      // Fallback: just move the map without opening card
       onLocationSelect(result.lat, result.lng, result.name);
     }
   };
