@@ -75,7 +75,8 @@ function App() {
   const loadFacilities = async () => {
     setIsLoading(true);
     try {
-      const facilities = await placesService.getFacilities({ page_size: 100 });
+      // const facilities = await placesService.getFacilities({ page_size: 100 });
+      const facilities: Place[] = [];
       setAllPlaces(facilities);
       setFilteredPlaces(facilities);
       
@@ -108,20 +109,20 @@ function App() {
     setFilteredPlaces([]);
     setIsLoading(true);
     
-    try {
-      if (category === 'all') {
-        const facilities = await placesService.getFacilities({ page_size: 100 });
-        setAllPlaces(facilities);
-        setFilteredPlaces(facilities);
-      } else {
-        const facilities = await placesService.getFacilitiesByCategory(category);
-        setFilteredPlaces(facilities);
-      }
-    } catch (error) {
-      console.error('Failed to filter facilities:', error);
-    } finally {
-      setIsLoading(false);
-    }
+    // try {
+    //   if (category === 'all') {
+    //     const facilities = await placesService.getFacilities({ page_size: 100 });
+    //     setAllPlaces(facilities);
+    //     setFilteredPlaces(facilities);
+    //   } else {
+    //     const facilities = await placesService.getFacilitiesByCategory(category);
+    //     setFilteredPlaces(facilities);
+    //   }
+    // } catch (error) {
+    //   console.error('Failed to filter facilities:', error);
+    // } finally {
+    //   setIsLoading(false);
+    // }
   };
 
   const handleLocationSelect = (lat: number, lng: number, name?: string) => {
@@ -177,8 +178,6 @@ function App() {
     destination: [number, number]
   ) => {
     setRoute(polyline.decode(calculatedRoute.routes[0].overview_polyline.points));
-    console.log(calculatedRoute);
-    console.log(polyline.decode(calculatedRoute.routes[0].overview_polyline.points));
     setSourceMarker(source);
     setDestinationMarker(destination);
     const midLat = (source[0] + destination[0]) / 2;
@@ -284,6 +283,7 @@ function App() {
 
   const handleNearbyPlaces = (places: Place[]) => {
     setFilteredPlaces(places);
+    setIsLoading(false);
   }
 
   return (
@@ -416,6 +416,7 @@ function App() {
             sourceMarker={sourceMarker}
             destinationMarker={destinationMarker}
             onFindNearbyPlaces={handleNearbyPlaces}
+            category={selectedCategory}
           />
 
           {selectedPlace && (

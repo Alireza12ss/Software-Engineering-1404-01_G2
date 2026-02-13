@@ -24,6 +24,7 @@ interface MapViewProps {
   sourceMarker: [number, number] | null;
   destinationMarker: [number, number] | null;
   onFindNearbyPlaces: (places: Place[]) => void;
+  category: string;
 }
 
 function MapController({ center }: { center: [number, number] }) {
@@ -78,12 +79,9 @@ export default function MapView({
   route,
   sourceMarker,
   destinationMarker,
-  onFindNearbyPlaces
+  onFindNearbyPlaces,
+  category
 }: MapViewProps) {
-
-  const decoded = polyline.decode(
-    "kz{xEggtxHn@E|@iAtMcAq@k`Ap@yO_OyA"
-  );
 
   return (
     <MapContainer
@@ -122,11 +120,11 @@ export default function MapView({
                   <span className="font-semibold text-gray-800">{place.rating}</span>
                 </div>
               </div>
-              <button
+              {/* <button
                 className="w-full bg-blue-600 text-white py-2 rounded-full font-medium hover:bg-blue-700 transition-colors"
               >
                 مسیریابی
-              </button>
+              </button> */}
             </div>
           </Popup>
         </Marker>
@@ -158,7 +156,7 @@ export default function MapView({
 
       {/* <Polyline positions={decoded} color='red'/> */}
 
-      <MapCenterListener onFindPlaces={onFindNearbyPlaces} />
+      <MapCenterListener onFindPlaces={onFindNearbyPlaces} category={category} />
     </MapContainer>
   );
 }
