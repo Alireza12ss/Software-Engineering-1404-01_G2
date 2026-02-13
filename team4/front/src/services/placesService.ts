@@ -2,19 +2,34 @@ import { getApiUrl, API_CONFIG } from '../config/api';
 import { Place, Review } from '../data/mockPlaces';
 import { authHelper } from '../utils/authHelper';
 
+interface City {
+  city_id: number;
+  name_fa?: string;
+  name_en?: string;
+  province?: {
+    province_id: number;
+    name_fa?: string;
+    name_en?: string;
+  };
+  location?: {
+    type: string;
+    coordinates: [number, number];
+  };
+}
+
 // Backend API response types
 interface BackendFacility {
   fac_id: number;
-  name_fa: string;
-  name_en: string;
-  category: string | { name_en: string; name_fa: string };
-  city: string | { name_en: string; name_fa: string };
-  province: string | { name_en: string; name_fa: string };
-  location: {
+  name_fa?: string;
+  name_en?: string;
+  category?: string | { name_en?: string; name_fa?: string };
+  city?: City;
+  province?: string | { name_en?: string; name_fa?: string };
+  location?: {
     type: 'Point';
     coordinates: [number, number]; // [lng, lat]
   };
-  avg_rating: number;
+  avg_rating?: number;
   review_count: number;
   primary_image: string | null;
   price_from: {
@@ -81,17 +96,22 @@ const transformFacilityToPlace = (facility: BackendFacility, reviews: Review[] =
   // Handle category - can be string or object
   const categoryStr = typeof facility.category === 'string' 
     ? facility.category 
-    : facility.category.name_en;
+    : facility.category?.name_en || 'unknown';
+  
+  // Safely build address with fallbacks
+  const cityName = facility.city?.name_fa || facility.city?.name_en || 'Unknown';
+  const provinceName = facility.city?.province?.name_fa || facility.city?.province?.name_en || '';
+  const address = provinceName ? `${cityName}, ${provinceName}` : cityName;
   
   return {
     id: facility.fac_id.toString(),
-    name: facility.name_en || facility.name_fa,
+    name: facility.name_en || facility.name_fa || 'Unknown',
     category: categoryStr.toLowerCase(),
     latitude: lat,
     longitude: lng,
     rating: facility.avg_rating || 0,
-    address: `${facility.city}, ${facility.province}`,
-    description: facility.name_fa || facility.name_en,
+    address: address,
+    description: facility.name_fa || facility.name_en || '',
     images: facility.primary_image ? [facility.primary_image] : [
       'https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg?auto=compress&cs=tinysrgb&w=800'
     ],
@@ -137,6 +157,7 @@ class PlacesService {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -173,6 +194,7 @@ class PlacesService {
       const response = await fetch(url, {
         method: 'POST',
         headers: authHelper.getAuthHeaders(),
+        credentials: 'include',
         body: JSON.stringify(filters),
       });
 
@@ -201,6 +223,7 @@ class PlacesService {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
       });
 
       if (!facilityResponse.ok) {
@@ -246,6 +269,7 @@ class PlacesService {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
       });
 
       if (!response.ok) {
@@ -278,6 +302,7 @@ class PlacesService {
       const response = await fetch(url, {
         method: 'POST',
         headers: authHelper.getAuthHeaders(),
+        credentials: 'include',
         body: JSON.stringify({ name }),
       });
 
@@ -289,9 +314,9 @@ class PlacesService {
       
       // Transform to search result format
       return data.results.map(facility => ({
-        name: facility.name_fa,
-        lat: facility.location.coordinates[1], // latitude
-        lng: facility.location.coordinates[0], // longitude
+        name: facility.name_fa || facility.name_en || 'Unknown',
+        lat: facility.location?.coordinates?.[1] || 0, // latitude
+        lng: facility.location?.coordinates?.[0] || 0, // longitude
         fac_id: facility.fac_id
       }));
     } catch (error) {

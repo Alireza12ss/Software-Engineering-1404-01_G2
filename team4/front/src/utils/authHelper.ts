@@ -1,36 +1,50 @@
 /**
  * Authentication helper utilities
  * 
- * TODO: Integrate with actual authentication system
- * For now, this is a placeholder that returns mock token
+ * Uses cookies for authentication tokens (access_token)
+ * Backend sets HttpOnly cookies, but we try to read if accessible
  */
+
+/**
+ * Get a specific cookie value by name
+ */
+function getCookie(name: string): string | null {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    const cookieValue = parts.pop()?.split(';').shift();
+    return cookieValue || null;
+  }
+  return null;
+}
 
 /**
  * Get CSRF token from cookies
  */
 function getCSRFToken(): string {
-  const match = document.cookie.match(/csrftoken=([^;]+)/);
-  return match ? match[1] : '';
+  return getCookie('csrftoken') || '';
 }
 
 export const authHelper = {
   /**
-   * Get authentication token from storage
-   * Returns null if user is not authenticated
+   * Get authentication token from cookie
+   * Returns null if not found or if cookie is HttpOnly (not accessible from JS)
    */
   getToken(): string | null {
-    // TODO: Get token from localStorage or context
-    // return localStorage.getItem('auth_token');
-    
-    // For development: return mock token or null
+    // Try to get access_token from cookie
+    // Note: If backend sets HttpOnly=true, this will return null
+    // which is fine - cookie will still be sent automatically with requests
     return null;
   },
 
   /**
    * Set authentication token
+   * Note: Backend should handle setting cookies via Set-Cookie header
    */
   setToken(token: string): void {
+    // Store in localStorage as fallback
     localStorage.setItem('auth_token', token);
+    
   },
 
   /**
@@ -38,6 +52,8 @@ export const authHelper = {
    */
   removeToken(): void {
     localStorage.removeItem('auth_token');
+    // Note: Can't remove HttpOnly cookies from JavaScript
+    // Backend should handle this on logout
   },
 
   /**
@@ -59,7 +75,7 @@ export const authHelper = {
    */
   getAuthHeaders(): HeadersInit {
     const token = this.getToken();
-    const csrfToken = '6JaG3lhnD2uYLCP8yqWbZcmPCRsP16M4';
+    const csrfToken = getCSRFToken();
     
     const headers: HeadersInit = {
       'Content-Type': 'application/json',

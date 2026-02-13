@@ -46,6 +46,7 @@ export const favoritesService = {
    * Toggle favorite status for a facility
    */
   async toggleFavorite(facilityId: number): Promise<FavoriteToggleResponse> {
+    
     const response = await fetch(`${FAVORITES_URL}/toggle/`, {
       method: 'POST',
       headers: authHelper.getAuthHeaders(),
